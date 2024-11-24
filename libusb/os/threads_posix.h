@@ -21,6 +21,8 @@
 #ifndef LIBUSB_THREADS_POSIX_H
 #define LIBUSB_THREADS_POSIX_H
 
+#ifndef NO_PTHREAD
+
 #include <pthread.h>
 
 #define PTHREAD_CHECK(expression)	ASSERT_EQ(expression, 0)
@@ -94,5 +96,33 @@ static inline void usbi_tls_key_delete(usbi_tls_key_t key)
 }
 
 unsigned long usbi_get_tid(void);
+
+#else
+
+#endif
+
+#define USBI_MUTEX_INITIALIZER	0
+typedef int usbi_mutex_static_t;
+static inline void usbi_mutex_static_lock(usbi_mutex_static_t *mutex) { }
+static inline void usbi_mutex_static_unlock(usbi_mutex_static_t *mutex) { }
+typedef int usbi_mutex_t;
+static inline void usbi_mutex_init(usbi_mutex_t *mutex) { }
+static inline void usbi_mutex_lock(usbi_mutex_t *mutex) { }
+static inline void usbi_mutex_unlock(usbi_mutex_t *mutex) { }
+static inline int usbi_mutex_trylock(usbi_mutex_t *mutex) { return 1; }
+static inline void usbi_mutex_destroy(usbi_mutex_t *mutex) { }
+typedef int usbi_cond_t;
+static void usbi_cond_init(pthread_cond_t *cond) { }
+static inline void usbi_cond_wait(usbi_cond_t *cond, usbi_mutex_t *mutex) { }
+static int usbi_cond_timedwait(usbi_cond_t *cond,
+	usbi_mutex_t *mutex, const struct timeval *tv)  { return 0; }
+static inline void usbi_cond_broadcast(usbi_cond_t *cond) { }
+static inline void usbi_cond_destroy(usbi_cond_t *cond) { }
+typedef int usbi_tls_key_t;
+static inline void usbi_tls_key_create(usbi_tls_key_t *key) { }
+static inline void *usbi_tls_key_get(usbi_tls_key_t key) { return (void*)0; }
+static inline void usbi_tls_key_set(usbi_tls_key_t key, void *ptr) { }
+static inline void usbi_tls_key_delete(usbi_tls_key_t key) { }
+static unsigned long usbi_get_tid(void) { return 0; }
 
 #endif /* LIBUSB_THREADS_POSIX_H */

@@ -37,6 +37,7 @@
  *
  * Therefore use a custom event system based on browser event emitters. */
 #include <emscripten.h>
+#ifndef NO_PTHREAD
 #include <emscripten/atomic.h>
 #include <emscripten/threading.h>
 
@@ -52,6 +53,7 @@ static void em_libusb_wait(const _Atomic int *ptr, int expected_value, int timeo
 		emscripten_atomic_wait_u32((int*)ptr, expected_value, 1000000LL * timeout);
 	}
 }
+#endif
 #endif
 #include <unistd.h>
 
@@ -158,7 +160,9 @@ void usbi_signal_event(usbi_event_t *event)
 		usbi_warn(NULL, "event write failed");
 #ifdef __EMSCRIPTEN__
 	event->has_event = 1;
+#ifndef NO_PTHREAD
 	emscripten_atomic_notify(&event->has_event, EMSCRIPTEN_NOTIFY_ALL_WAITERS);
+#endif
 #endif
 }
 
@@ -255,6 +259,8 @@ int usbi_wait_for_events(struct libusb_context *ctx,
 	int internal_fds, num_ready;
 
 	usbi_dbg(ctx, "poll() %u fds with timeout in %dms", (unsigned int)nfds, timeout_ms);
+
+#ifndef NO_PTHREAD
 #ifdef __EMSCRIPTEN__
 	/* Emscripten's poll doesn't actually block, so we need to use an
 	 * out-of-band waiting signal. */
@@ -264,6 +270,13 @@ int usbi_wait_for_events(struct libusb_context *ctx,
 	timeout_ms = 0;
 #endif
 	num_ready = poll(fds, nfds, timeout_ms);
+#else
+  timeout_ms = 0;
+  do {
+    num_ready = poll(fds, nfds, timeout_ms);
+    emscripten_sleep(1);
+  } while (!num_ready);
+#endif
 	usbi_dbg(ctx, "poll() returned %d", num_ready);
 	if (num_ready == 0) {
 		if (usbi_using_timer(ctx))

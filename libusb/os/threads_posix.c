@@ -21,6 +21,8 @@
 
 #include "libusbi.h"
 
+#ifndef NO_PTHREAD
+
 #include <errno.h>
 #include <limits.h>
 #if defined(__ANDROID__)
@@ -124,3 +126,5 @@ unsigned long usbi_get_tid(void)
 
 	return tl_tid = tid;
 }
+
+#endif

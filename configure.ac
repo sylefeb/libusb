@@ -156,18 +156,18 @@ if test "x$platform" = xposix; then
 	fi
 	dnl Some compilers do not support the '-pthread' option so check for it here
 	saved_CFLAGS="${CFLAGS}"
-	CFLAGS="-Wall -Werror -pthread"
-	AC_MSG_CHECKING([if $CC recognizes -pthread])
-	AC_COMPILE_IFELSE([AC_LANG_PROGRAM([], [])],
-		[AC_MSG_RESULT([yes])
-		 AC_SUBST(THREAD_CFLAGS, [-pthread])],
-		[AC_MSG_RESULT([no])])
-	CFLAGS="${saved_CFLAGS}"
+#	CFLAGS="-Wall -pthread"
+#	AC_MSG_CHECKING([if $CC recognizes -pthread])
+#	AC_COMPILE_IFELSE([AC_LANG_PROGRAM([], [])],
+#		[AC_MSG_RESULT([yes])
+#		 AC_SUBST(THREAD_CFLAGS, [-pthread])],
+#		[AC_MSG_RESULT([no])])
+#	CFLAGS="${saved_CFLAGS}"
 	dnl Android Linux and Darwin provide pthread functions directly in libc
 	dnl glibc also provides some pthread functions directly, so search for a thread-specific function
-	AC_SEARCH_LIBS([pthread_create], [pthread],
-		[test "x$ac_cv_search_pthread_create" != "xnone required" && AC_SUBST(THREAD_LIBS, [-lpthread])],
-		[], [])
+#	AC_SEARCH_LIBS([pthread_create], [pthread],
+#		[test "x$ac_cv_search_pthread_create" != "xnone required" && AC_SUBST(THREAD_LIBS, [-lpthread])],
+#		[], [])
 	dnl Check for new-style atomic builtins. We first check without linking to -latomic.
 	AC_MSG_CHECKING(whether __atomic_load_n is supported)
 	AC_LINK_IFELSE([AC_LANG_SOURCE([[
